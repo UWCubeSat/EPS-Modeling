@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 
 # Read the CSV file, skipping initial metadata rows
-df = pd.read_csv("Comparison with Physical Battery/Data/Trace 2025-03-27 3.csv", skiprows=8)
+df = pd.read_csv("data/Trace 2025-03-27 3.csv", skiprows=8)
 
 # Rename columns for clarity
 df.columns = ["Time", "Voltage", "Power"]

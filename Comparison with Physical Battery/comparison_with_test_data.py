@@ -11,43 +11,50 @@ import liionpack as lp
 
 
 #%%
-params = pybamm.ParameterValues('Chen2020')
+params = pybamm.ParameterValues('NCA_Kim2011')
 
 
 # These params don't really seem to do anything?
-params.update({'Nominal cell capacity [A.h]': 3.5})
+# params.update({'Nominal cell capacity [A.h]': 3.5})
 params.update({'Open-circuit voltage at 0% SOC [V]': 2.5})
-params.update({'Open-circuit voltage at 100% SOC [V]': 4.2})
-params.update({'Upper voltage cut-off [V]': 4.2})
+# params.update({'Open-circuit voltage at 100% SOC [V]': 4.2})
+# params.update({'Upper voltage cut-off [V]': 4.2})
 params.update({'Lower voltage cut-off [V]': 2.5})
-params.update({'Current function [A]': 8.0})
+# params.update({'Current function [A]': 8.0})
 
 # trying physical params
-badness_factor = 0.85
+badness_factor = 1.0
 
-init_electrolyte = params['Initial concentration in electrolyte [mol.m-3]']
-init_neg_elec = params['Initial concentration in negative electrode [mol.m-3]']
-init_pos_elec = params['Initial concentration in positive electrode [mol.m-3]']
+# init_electrolyte = params['Initial concentration in electrolyte [mol.m-3]']
+# init_neg_elec = params['Initial concentration in negative electrode [mol.m-3]']
+# init_pos_elec = params['Initial concentration in positive electrode [mol.m-3]']
 
-params.update({'Initial concentration in electrolyte [mol.m-3]' : init_electrolyte * badness_factor})
-params.update({'Initial concentration in negative electrode [mol.m-3]' : init_neg_elec * badness_factor})
-params.update({'Initial concentration in positive electrode [mol.m-3]' : init_pos_elec * badness_factor})
+# params.update({'Initial concentration in electrolyte [mol.m-3]' : init_electrolyte * badness_factor})
+# params.update({'Initial concentration in negative electrode [mol.m-3]' : init_neg_elec * badness_factor})
+# params.update({'Initial concentration in positive electrode [mol.m-3]' : init_pos_elec * badness_factor})
 
 ### Physical Test Values ###
 
-starting_voltage = 3.54 # voltage where we started the physical test
-discharge_current = 2.5
+starting_voltage = 3.8 # voltage where we started the physical test
+discharge_current = 1
 
-minutes = 20
+minutes = 30
 
 #%%
+# experiment = pybamm.Experiment(
+#     [1 * (f"Discharge at 0.5A until {starting_voltage}V",
+#      "Rest for 1 hour"),
+#      (f"Discharge at {discharge_current}A for {minutes} minutes",
+#     "Rest for 30 seconds")
+#     ], period="10 seconds"
+# )
+
 experiment = pybamm.Experiment(
-    [10 * (f"Discharge at 0.5A until {starting_voltage}V",
-     "Rest for 1 hour"),
-     (f"Discharge at {discharge_current}A for {minutes} minutes",
+    [(f"Discharge at {discharge_current}A for {minutes} minutes",
     "Rest for 30 seconds")
     ], period="10 seconds"
 )
+
 
 models = [pybamm.lithium_ion.SPM({"SEI": "ec reaction limited"}), pybamm.lithium_ion.SPMe(), pybamm.lithium_ion.DFN()]
 
@@ -57,7 +64,7 @@ sols = [sim.solve() for sim in sims]
 def run_experiment(test_conditions, params):
     starting_voltage, discharge_current, minutes = test_conditions
     experiment = pybamm.Experiment(
-        [10 * (f"Discharge at 0.5A until {starting_voltage}V",
+        [0 * (f"Discharge at 0.5A until {starting_voltage}V",
         "Rest for 1 hour"),
         (f"Discharge at {discharge_current}A for {minutes} minutes",
         "Rest for 30 seconds")
@@ -94,7 +101,7 @@ pybamm_voltage_vals = voltage_vals[indices]
 #%%
 ### Get Real Data
 
-df = pd.read_csv("Comparison with Physical Battery/Data/Trace 2025-03-27 4.csv", skiprows=8)
+df = pd.read_csv("../data/Trace 2025-03-27 5.csv", skiprows=8)
 
 # Rename columns for clarity
 df.columns = ["Time", "Voltage", "Power"]
@@ -132,7 +139,7 @@ plt.plot(pybamm_time_vals, pybamm_voltage_vals, label="DFN  Model", color="red",
 # Labels & legend
 plt.xlabel("Time (s)")
 plt.ylabel("Voltage (V)")
-plt.title("Real Test Data vs PyBaMM Predictions (20 min, CC 2A discharge)")
+plt.title("Real Test Data vs PyBaMM Predictions (33 min, CC 1A discharge)")
 plt.legend()
 plt.grid(True)
 
@@ -186,3 +193,4 @@ if __name__ == '__main__':
             
 
     # plot best, print mse
+# %%
